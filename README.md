@@ -13,6 +13,10 @@
   </p>
 </p>
 
+## ⚠️ Warning
+
+This project relies heavily on **AI** and is just a tool to facilitate the management of university affairs, so **"it's fine as long as it works."**
+
 ## ✨ Features
 
 - [x] Check WorkNum of Students

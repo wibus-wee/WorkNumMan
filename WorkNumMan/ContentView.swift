@@ -182,6 +182,39 @@ let commonKeyWords = [
     "<any>",
 ]
 
+struct DirectoryHistory: Codable {
+    var paths: [String] = []
+    var maxCount = 5
+    
+    mutating func add(_ path: String) {
+        // 移除已存在的相同路径
+        paths.removeAll { $0 == path }
+        // 添加新路径到开头
+        paths.insert(path, at: 0)
+        // 保持最大数量为5
+        if paths.count > maxCount {
+            paths = Array(paths.prefix(maxCount))
+        }
+    }
+}
+
+func loadDirectoryHistory() -> DirectoryHistory {
+    let defaults = UserDefaults.standard
+    let decoder = JSONDecoder()
+    if let savedDirectoryHistory = defaults.object(forKey: "directoryHistory") as? Data {
+        return try! decoder.decode(DirectoryHistory.self, from: savedDirectoryHistory)
+    }
+    return DirectoryHistory()
+}
+
+func saveDirectoryHistory(_ history: DirectoryHistory) {
+    let defaults = UserDefaults.standard
+    let encoder = JSONEncoder()
+    if let encoded = try? encoder.encode(history) {
+        defaults.set(encoded, forKey: "directoryHistory")
+    }
+}
+
 struct ContentView: View {
     // MARK: - State
 
@@ -189,6 +222,7 @@ struct ContentView: View {
     @State var checkDirectory: URL? = nil // 需要检查的目录
     @State var checkResult: [String: StudentCheckResult] = [:] // 检查结果
     @State var checkFormat: String = "" // 检查格式
+    @State private var directoryHistory: DirectoryHistory = loadDirectoryHistory()
 
     // MARK: - UI State
 
@@ -198,7 +232,7 @@ struct ContentView: View {
     @State var showUnsubmittedSheet: Bool = false
     var body: some View {
         ScrollView {
-            VStack {
+            VStack(alignment: .leading) {
                 // MARK: - Directory
 
                 VStack(alignment: .leading) {
@@ -261,6 +295,33 @@ struct ContentView: View {
                     }
                 }
                 .padding()
+                
+
+                // 在目录选择区域下方添加
+                if !directoryHistory.paths.isEmpty {
+                    VStack(alignment: .leading) {
+                        Text("最近使用")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        
+                        ForEach(directoryHistory.paths, id: \.self) { path in
+                            HStack {
+                                Image(systemName: "clock.arrow.circlepath")
+                                Text(path)
+                                    .lineLimit(1)
+                                    .truncationMode(.middle)
+                                    .font(.system(.body, design: .monospaced))
+                                    .foregroundColor(.primary)
+                            }
+                            .padding(.vertical, 4)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                checkDirectory = URL(fileURLWithPath: path)
+                            }
+                        }
+                    }
+                    .padding()
+                }
 
                 // MARK: - Check Format
 
@@ -303,8 +364,16 @@ struct ContentView: View {
 
                 HStack {
                     Button("检查") {
-                        checkResult = checkDirectoryWithCheckFormat(directory: checkDirectory!, checkFormat: checkFormat)
-                        showResultSheet = true
+                        if let directory = checkDirectory {
+                            checkResult = checkDirectoryWithCheckFormat(directory: directory, checkFormat: checkFormat)
+                            showResultSheet = true
+                            saveDirectory(directory)
+                        } else {
+                            let alert = NSAlert()
+                            alert.alertStyle = .warning
+                            alert.messageText = "请选择一个目录. 或者拖拽文件夹到这里"
+                            alert.runModal()
+                        }
                     }
                     Button("导入学生") {
                         showImportSheet = true
@@ -370,6 +439,13 @@ struct ContentView: View {
                 .frame(width: 400, height: 600)
         }
         .padding()
+    }
+
+    // 在选择目录后保存历史记录
+    func saveDirectory(_ url: URL) {
+        checkDirectory = url
+        directoryHistory.add(url.path)
+        saveDirectoryHistory(directoryHistory)
     }
 }
 

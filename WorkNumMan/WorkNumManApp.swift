@@ -13,5 +13,6 @@ struct WorkNumManApp: App {
         WindowGroup {
             ContentView()
         }
+        .windowStyle(.hiddenTitleBar)
     }
 }

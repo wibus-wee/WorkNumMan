@@ -299,20 +299,7 @@ struct ContentView: View {
                 }
                 .padding()
 
-                // MARK: - Check Result
-
-                if checkResult.count > 0 {
-                    VStack(alignment: .leading) {
-                        Text("检查结果")
-                            .font(.title2)
-                            .fontWeight(.bold)
-
-                        ResultView(checkResult: checkResult)
-                    }
-                    .padding()
-                }
-
-                // MARK: - Action
+                 // MARK: - Action
 
                 HStack {
                     Button("检查") {
@@ -346,6 +333,19 @@ struct ContentView: View {
                     }
                 }
                 .padding()
+
+                // MARK: - Check Result
+
+                if checkResult.count > 0 {
+                    VStack(alignment: .leading) {
+                        Text("检查结果")
+                            .font(.title2)
+                            .fontWeight(.bold)
+
+                        ResultView(checkResult: checkResult)
+                    }
+                    .padding()
+                }
             }
         }
         // .sheet(isPresented: $showResultSheet) {

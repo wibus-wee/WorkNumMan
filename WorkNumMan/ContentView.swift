@@ -313,7 +313,10 @@ struct ContentView: View {
                     }
                     if !checkResult.isEmpty {
                         Button("导出结果为图片") {
-                            if let resultView = ResultView(checkResult: checkResult).exportAsImage() {
+                            if let resultView = ResultView(
+                                checkResult: checkResult,
+                                directoryName: checkDirectory?.lastPathComponent ?? "未知目录"
+                            ).exportAsImage() {
                                 let savePanel = NSSavePanel()
                                 savePanel.allowedContentTypes = [.png]
                                 savePanel.nameFieldStringValue = "检查结果.png"
@@ -341,7 +344,7 @@ struct ContentView: View {
                             .font(.title2)
                             .fontWeight(.bold)
 
-                        ResultView(checkResult: checkResult)
+                        ResultView(checkResult: checkResult, directoryName: nil)
                     }
                     .padding()
                 }
@@ -476,6 +479,7 @@ struct DiffView: View {
 
 struct ResultView: View {
     let checkResult: [String: StudentCheckResult]
+    let directoryName: String? // 新增属性
     
     // 添加导出图片的函数
     func exportAsImage() -> NSImage? {
@@ -508,6 +512,13 @@ struct ResultView: View {
     
     var body: some View {
         VStack(spacing: 0) {
+            if let directoryName = directoryName {
+                Text("\(directoryName) 的提交情况")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .padding(.vertical)
+            }
+                
             // MARK: - Header
 
             HStack {
@@ -568,19 +579,120 @@ struct ResultView: View {
 struct StudentListSheet: View {
     @Environment(\.dismiss) var dismiss
     @State var studentList: StudentList = loadStudents()
+    @State private var editingStudent: Student? = nil
+    @State private var showEditSheet = false
+    
     var body: some View {
         VStack {
             Text("学生列表")
                 .font(.title2)
                 .fontWeight(.bold)
-
-            List(studentList.students, id: \.id) { student in
+            
+            List(studentList.students) { student in
                 HStack {
-                    Text(student.studentId)
-                    Text(student.name)
+                    VStack(alignment: .leading) {
+                        HStack {
+                            Text(student.studentId)
+                                .foregroundColor(.secondary)
+                            Text(student.name)
+                                .fontWeight(.medium)
+                        }
+                        Text("宿舍: \(student.roomId) | 电话: \(student.phone)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Spacer()
+                    
+                    Button("编辑") {
+                        editingStudent = student
+                        showEditSheet = true
+                    }
+                    .buttonStyle(.borderless)
                 }
+            }
+        }
+        .sheet(isPresented: $showEditSheet) {
+            if let student = editingStudent {
+                EditStudentSheet(
+                    student: student,
+                    studentList: $studentList,
+                    isPresented: $showEditSheet
+                )
             }
         }
         .padding()
     }
 }
+
+struct EditStudentSheet: View {
+    let student: Student
+    @Binding var studentList: StudentList
+    @Binding var isPresented: Bool
+    
+    @State private var studentId: String
+    @State private var name: String
+    @State private var roomId: String
+    @State private var phone: String
+    
+    init(student: Student, studentList: Binding<StudentList>, isPresented: Binding<Bool>) {
+        self._studentList = studentList
+        self._isPresented = isPresented
+        self.student = student
+        self._studentId = State(initialValue: student.studentId)
+        self._name = State(initialValue: student.name)
+        self._roomId = State(initialValue: student.roomId)
+        self._phone = State(initialValue: student.phone)
+    }
+    
+    var body: some View {
+        VStack {
+            Text("编辑学生信息")
+                .font(.title2)
+                .fontWeight(.bold)
+            
+            TextField("学号", text: $studentId)
+                .textFieldStyle(.roundedBorder)
+                .frame(height: 30)
+            
+            TextField("姓名", text: $name)
+                .textFieldStyle(.roundedBorder)
+                .frame(height: 30)
+            
+            TextField("宿舍", text: $roomId)
+                .textFieldStyle(.roundedBorder)
+                .frame(height: 30)
+            
+            TextField("电话", text: $phone)
+                .textFieldStyle(.roundedBorder)
+                .frame(height: 30)
+            
+            HStack {
+                Button("保存") {
+                    if let index = studentList.students.firstIndex(where: { $0.id == student.id }) {
+                        studentList.students.remove(at: index)
+                        let updatedStudent = Student(
+                            id: student.id,
+                            studentId: studentId,
+                            name: name,
+                            roomId: roomId,
+                            phone: phone
+                        )
+                        studentList.students.insert(updatedStudent, at: index)
+                        
+                        saveStudents(list: studentList)
+                    }
+                    isPresented = false
+                }
+                
+                Button("取消") {
+                    isPresented = false
+                }
+            }
+            .padding()
+        }
+        .padding()
+    }
+}
+
+

@@ -25,7 +25,7 @@
 
 ## 🎨 Preview
 
-![preview](./preview.png)
+<img src="./preview.png" width="700" alt="Check WorkNum of Students" />
 
 ## 📄 License
 

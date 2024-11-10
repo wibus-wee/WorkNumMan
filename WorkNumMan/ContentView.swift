@@ -195,6 +195,7 @@ struct ContentView: View {
     @State var showImportSheet: Bool = false
     @State var showResultSheet: Bool = false
     @State var showStudentListSheet: Bool = false
+    @State var showUnsubmittedSheet: Bool = false
     var body: some View {
         ScrollView {
             VStack {
@@ -332,6 +333,9 @@ struct ContentView: View {
                                 }
                             }
                         }
+                        Button("查看未提交名单") {
+                            showUnsubmittedSheet = true
+                        }
                     }
                 }
                 .padding()
@@ -360,6 +364,10 @@ struct ContentView: View {
         .sheet(isPresented: $showStudentListSheet) {
             StudentListSheet()
                 .frame(width: 800, height: 600)
+        }
+        .sheet(isPresented: $showUnsubmittedSheet) {
+            UnsubmittedListSheet(checkResult: checkResult)
+                .frame(width: 400, height: 600)
         }
         .padding()
     }
@@ -692,6 +700,44 @@ struct EditStudentSheet: View {
             .padding()
         }
         .padding()
+    }
+}
+
+struct UnsubmittedListSheet: View {
+    let checkResult: [String: StudentCheckResult]
+    @Environment(\.dismiss) var dismiss
+    
+    var unsubmittedStudents: [(String, StudentCheckResult)] {
+        checkResult.filter { !$0.value.isSubmitted }
+            .sorted { $0.key < $1.key }
+    }
+    
+    var body: some View {
+        VStack {
+            Text("未提交名单")
+                .font(.title2)
+                .fontWeight(.bold)
+                .padding()
+            
+            Text("共 \(unsubmittedStudents.count) 人未提交")
+                .foregroundColor(.secondary)
+                .padding(.bottom)
+            
+            List(unsubmittedStudents, id: \.0) { name, result in
+                Text(name)
+            }
+
+            Divider()
+
+            TextEditor(text: .constant(unsubmittedStudents.map { "\($0.0)," }.joined()))
+                .font(.system(.body, design: .monospaced))
+                .frame(height: 200)
+            
+            Button("关闭") {
+                dismiss()
+            }
+            .padding()
+        }
     }
 }
 

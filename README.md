@@ -13,7 +13,25 @@
   </p>
 </p>
 
-## Author
+## ✨ Features
+
+- [x] Check WorkNum of Students
+- [x] Import Students from String List
+- [x] Export Result as Image
+
+## ❓ Issues
+
+- [ ] CPU Usage is too high while scrolling.
+
+## 🎨 Preview
+
+![preview](./preview.png)
+
+## 📄 License
+
+This project is licensed under AGPLv3. See the [LICENSE](LICENSE) file for details.
+
+## 📝 Author
 
 WorkNumMan © Wibus, Released under AGPLv3. Created on Nov 9, 2024
 

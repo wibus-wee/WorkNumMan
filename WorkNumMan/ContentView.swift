@@ -121,7 +121,7 @@ func checkDirectoryWithCheckFormat(directory: URL, checkFormat: String) -> [Stri
     var result: [String: StudentCheckResult] = [:]
     let studentList = loadStudents()
     for student in studentList.students {
-        var fileName = checkFormat
+        let fileName = checkFormat
             .replacingOccurrences(of: "<id>", with: student.studentId)
             .replacingOccurrences(of: "<name>", with: student.name)
 
@@ -325,6 +325,25 @@ struct ContentView: View {
                     Button("学生列表") {
                         showStudentListSheet = true
                     }
+                    if !checkResult.isEmpty {
+                        Button("导出结果为图片") {
+                            if let resultView = ResultView(checkResult: checkResult).exportAsImage() {
+                                let savePanel = NSSavePanel()
+                                savePanel.allowedContentTypes = [.png]
+                                savePanel.nameFieldStringValue = "检查结果.png"
+                                
+                                if savePanel.runModal() == .OK {
+                                    if let url = savePanel.url {
+                                        if let data = resultView.tiffRepresentation,
+                                           let bitmap = NSBitmapImageRep(data: data),
+                                           let pngData = bitmap.representation(using: .png, properties: [:]) {
+                                            try? pngData.write(to: url)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
                 .padding()
             }
@@ -458,6 +477,22 @@ struct DiffView: View {
 
 struct ResultView: View {
     let checkResult: [String: StudentCheckResult]
+    
+    // 添加导出图片的函数
+    func exportAsImage() -> NSImage? {
+        let view = self
+            .frame(width: 800) // 设置固定宽度以确保导出效果
+            .padding()
+        
+        let renderer = ImageRenderer(content: view)
+        renderer.scale = 2.0 // 设置2倍清晰度
+        
+        // 配置输出属性
+        if let nsImage = renderer.nsImage {
+            return nsImage
+        }
+        return nil
+    }
     
     // 添加背景色计算函数
     private func getBackgroundColor(result: StudentCheckResult) -> Color {

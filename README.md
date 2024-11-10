@@ -19,13 +19,32 @@
 - [x] Import Students from String List
 - [x] Export Result as Image
 
-## ❓ Issues
-
-- [ ] CPU Usage is too high while scrolling.
-
 ## 🎨 Preview
 
 <img src="./preview.png" width="500" alt="Check WorkNum of Students" />
+
+## 📦 Usage
+
+### How to import students list?
+
+**_Students List Format:_**
+
+```
+12345 // Room ID
+StudentID,Name,Phone
+StudentID,Name,Phone
+...
+```
+
+### Format Keywords
+
+- `<id>`: Student ID
+- `<name>`: Student Name
+- `<any>`: Any length of any string
+
+## ❓ Issues
+
+- [ ] CPU Usage is too high while scrolling.
 
 ## 📄 License
 

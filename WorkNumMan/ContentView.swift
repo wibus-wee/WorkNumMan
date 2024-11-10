@@ -23,19 +23,18 @@ func importStudents(list: String) -> StudentList {
     var studentList = StudentList()
     let preList = list.split(separator: "\n")
     var nowRoomId = ""
-    var studentId = 2412402110101
     for item in preList {
         if item.starts(with: "4") {
             nowRoomId = String(item)
         } else {
             let student = Student(
-                studentId: String(studentId),
-                name: String(item.split(separator: ",")[0]),
+                studentId: String(item.split(separator: ",")[0]),
+                name: String(item.split(separator: ",")[1]),
                 roomId: nowRoomId,
                 phone: String(item.split(separator: ",")[2])
             )
+            // For example: StudentID,Name,Phone
             studentList.students.append(student)
-            studentId += 1
         }
     }
     print("[*] Loaded \(studentList.students.count) students")

@@ -45,6 +45,8 @@ StudentID,Name,Phone
 - `<id>`: Student ID
 - `<name>`: Student Name
 - `<any>`: Any length of any string
+- `<order>`: Order of Student
+- `<order_CN>`: Order of Student in Chinese
 
 ## ❓ Issues
 
